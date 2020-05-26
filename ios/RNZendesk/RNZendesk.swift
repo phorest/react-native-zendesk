@@ -105,7 +105,7 @@ class RNZendesk: RCTEventEmitter {
             let customFields = options["customFields"] as! NSDictionary
             var cfs:[CustomField] = []
             for (key, value) in customFields {
-                let cf = CustomField(fieldId: key as? Int64 ?? 0 , value: value )
+                let cf = CustomField(fieldId: Int64(key as! String) ?? 0, value: value )
                 cfs.append(cf)
             }
             config.customFields = cfs
