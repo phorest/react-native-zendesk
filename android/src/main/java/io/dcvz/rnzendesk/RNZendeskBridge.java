@@ -20,6 +20,7 @@ import zendesk.core.PushRegistrationProvider;
 import zendesk.support.Attachment;
 import zendesk.support.Support;
 import zendesk.support.CreateRequest;
+import zendesk.support.CustomField;
 import zendesk.support.UploadProvider;
 import zendesk.support.UploadResponse;
 import zendesk.support.Request;
@@ -45,6 +46,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 
 import java.util.Locale;
+import java.util.Map;
 
 public class RNZendeskBridge extends ReactContextBaseJavaModule {
 
@@ -157,9 +159,16 @@ public class RNZendeskBridge extends ReactContextBaseJavaModule {
     @ReactMethod
     public void showNewTicket(ReadableMap options) {
         ArrayList tags = options.getArray("tags").toArrayList();
-
+        String subject = options.getString("subject");
+        List<CustomField> fields = new ArrayList<>();
+        if(options.hasKey("customFields")){
+            for (Map.Entry<String, Object> next : options.getMap("customFields").toHashMap().entrySet())
+                fields.add(new CustomField(Long.parseLong(next.getKey()), (String) next.getValue()));
+        }
         Intent intent = RequestActivity.builder()
                 .withTags(tags)
+                .withRequestSubject(subject)
+                .withCustomFields(fields)
                 .intent(getReactApplicationContext());
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
