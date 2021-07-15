@@ -88,7 +88,8 @@ class RNZendesk: RCTEventEmitter {
             let helpCenter = HelpCenterUi.buildHelpCenterOverviewUi(withConfigs: [hcConfig])
 
             let nvc = UINavigationController(rootViewController: helpCenter)
-            UIApplication.shared.keyWindow?.rootViewController?.present(nvc, animated: true, completion: nil)
+            let controller = self.topController(UIApplication.shared.keyWindow?.rootViewController)
+            controller?.present(nvc, animated: true, completion: nil)
         }
     }
 
@@ -111,7 +112,8 @@ class RNZendesk: RCTEventEmitter {
             config.customFields = cfs
             let requestScreen = RequestUi.buildRequestUi(with: [config])
             let nvc = UINavigationController(rootViewController: requestScreen)
-            UIApplication.shared.keyWindow?.rootViewController?.present(nvc, animated: true, completion: nil)
+            let controller = self.topController(UIApplication.shared.keyWindow?.rootViewController)
+            controller?.present(nvc, animated: true, completion: nil)
         }
     }
 
@@ -120,13 +122,8 @@ class RNZendesk: RCTEventEmitter {
         DispatchQueue.main.async {
             let requestScreen = RequestUi.buildRequestUi(requestId: requestId)
             let nvc = UINavigationController(rootViewController: requestScreen)
-            if var topController = UIApplication.shared.keyWindow?.rootViewController {
-                while let presentedViewController = topController.presentedViewController {
-                    topController = presentedViewController
-                }
-
-                topController.present(nvc, animated: true, completion: nil)
-            }
+            let controller = self.topController(UIApplication.shared.keyWindow?.rootViewController)
+            controller?.present(nvc, animated: true, completion: nil)
         }
     }
 
@@ -144,7 +141,8 @@ class RNZendesk: RCTEventEmitter {
             let requestListController = RequestUi.buildRequestList()
 
             let nvc = UINavigationController(rootViewController: requestListController)
-            UIApplication.shared.keyWindow?.rootViewController?.present(nvc, animated: true)
+            let controller = self.topController(UIApplication.shared.keyWindow?.rootViewController)
+            controller?.present(nvc, animated: true, completion: nil)
         }
     }
 
@@ -244,6 +242,20 @@ class RNZendesk: RCTEventEmitter {
                     resolve(requestDicts)
                 }
             }
+        }
+    }
+    
+    private func topController(_ rootController: UIViewController?) -> UIViewController? {
+        guard let rootController = rootController else { return nil }
+        
+        if let navController = rootController as? UINavigationController {
+            return topController(navController.topViewController)
+        } else if let tabController = rootController as? UITabBarController {
+            return topController(tabController.viewControllers?[tabController.selectedIndex])
+        } else if let modController = rootController.presentedViewController {
+            return topController(modController)
+        } else {
+            return rootController
         }
     }
 }
